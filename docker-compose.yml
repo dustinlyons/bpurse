@@ -1,11 +1,10 @@
-version: "3"
+version: '3'
 
 services:
-
   # ui:
   #   image: ui
-  #   stdin_open: true 
-  #   tty: true 
+  #   stdin_open: true
+  #   tty: true
   #   build:
   #     context: frontend
   #     dockerfile: Dockerfile
@@ -36,13 +35,13 @@ services:
       context: backend
       dockerfile: Dockerfile
     ports:
-      - "4004:4004"
+      - '4004:4004'
     volumes:
-      - "./backend:/app"
+      - './backend:/app'
     links:
       - db
     env_file:
-      - "backend/.env"
+      - 'backend/.env'
 
 volumes:
   db:
