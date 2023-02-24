@@ -6,95 +6,95 @@ import { FastifyPluginAsync } from 'fastify';
 import errors from 'http-errors';
 
 const login = Type.Object({
-	email: Type.String({ format: 'email' }),
-	password: Type.String()
+  email: Type.String({ format: 'email' }),
+  password: Type.String()
 });
 
 const loginResponse = Type.Object({
-	token: Type.String()
+  token: Type.String()
 });
 
 const register = Type.Object({
-	name: Type.String(),
-	email: Type.String({ format: 'email' }),
-	password: Type.String()
+  name: Type.String(),
+  email: Type.String({ format: 'email' }),
+  password: Type.String()
 });
 
 type Register = Static<typeof register>;
 
 const auth: FastifyPluginAsync = async (fastify, _opts): Promise<void> => {
-	fastify.post<{ Body: Register }>(
-		'/auth/register',
-		{
-			schema: {
-				tags: ['auth'],
-				description: 'Register a new user',
-				body: register
-			}
-		},
-		async function (req, _resp) {
-			const { name, email, password } = req.body;
+  fastify.post<{ Body: Register }>(
+    '/auth/register',
+    {
+      schema: {
+        tags: ['auth'],
+        description: 'Register a new user',
+        body: register
+      }
+    },
+    async function (req, _resp) {
+      const { name, email, password } = req.body;
 
-			const userExists = await fastify.prisma.user.findUnique({
-				where: { email }
-			});
+      const userExists = await fastify.prisma.user.findUnique({
+        where: { email }
+      });
 
-			if (userExists) {
-				throw new errors.BadRequest('User already exists');
-			}
+      if (userExists) {
+        throw new errors.BadRequest('User already exists');
+      }
 
-			const hashedPassword = await bcrypt.hash(password, 10);
-			return await fastify.prisma.user.create({
-				data: {
-					name,
-					email,
-					password: hashedPassword
-				}
-			});
-		}
-	);
+      const hashedPassword = await bcrypt.hash(password, 10);
+      return await fastify.prisma.user.create({
+        data: {
+          name,
+          email,
+          password: hashedPassword
+        }
+      });
+    }
+  );
 
-	fastify.post<{
-		Body: Static<typeof login>;
-		Reply: Static<typeof loginResponse>;
-	}>(
-		'/login',
-		{
-			schema: {
-				tags: ['auth'],
-				description: 'login',
-				body: login
-			}
-		},
-		async function (req, _resp) {
-			let { email, password } = req.body;
+  fastify.post<{
+    Body: Static<typeof login>;
+    Reply: Static<typeof loginResponse>;
+  }>(
+    '/login',
+    {
+      schema: {
+        tags: ['auth'],
+        description: 'login',
+        body: login
+      }
+    },
+    async function (req, _resp) {
+      let { email, password } = req.body;
 
-			let user = await fastify.prisma.user.findFirst({
-				where: {
-					email
-				}
-			});
+      let user = await fastify.prisma.user.findFirst({
+        where: {
+          email
+        }
+      });
 
-			if (!user) {
-				throw new errors.BadRequest('Invalid email or password');
-			}
+      if (!user) {
+        throw new errors.BadRequest('Invalid email or password');
+      }
 
-			const valid = await bcrypt.compare(password, user.password);
+      const valid = await bcrypt.compare(password, user.password);
 
-			if (!valid) {
-				throw new errors.BadRequest('Invalid email or password');
-			}
+      if (!valid) {
+        throw new errors.BadRequest('Invalid email or password');
+      }
 
-			let token = fastify.jwt.sign({
-				id: user.id
-			});
+      let token = fastify.jwt.sign({
+        id: user.id
+      });
 
-			return {
-				token,
-				user
-			};
-		}
-	);
+      return {
+        token,
+        user
+      };
+    }
+  );
 };
 
 export default auth;

@@ -3,9 +3,9 @@ import fastify from 'fastify';
 import type { PrismaClient } from 'fastify';
 
 declare module 'fastify' {
-	export interface FastifyInstance {
-		authenticate: any;
-		prisma: PrismaClient;
-		someSupport(): string;
-	}
+  export interface FastifyInstance {
+    authenticate: any;
+    prisma: PrismaClient;
+    someSupport(): string;
+  }
 }
